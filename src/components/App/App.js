@@ -9,15 +9,6 @@ import Footer from '../Footer/Footer';
 import Register from '../Register/Register';
 import Login from '../Login/Login';
 import PageNotFoundError from '../PageNotFoundError/PageNotFoundError';
-import Profile from '../Profile/Profile';
-import Promo from '../Promo/Promo';
-import AboutMe from '../Main/AboutMe/AboutMe';
-import AboutProject from '../Main/AboutProject/AboutProject';
-import Portfolio from '../Main/Portfolio/Portfolio';
-import Techs from '../Main/Techs/Techs';
-import Movies from '../Movies/Movies';
-import Preloader from '../Movies/Preloader/Preloader';
-import SavedMovies from '../Movies/SaveMovies/SavedMovies';
 import requestMainApi from '../../utils/MainApi';
 
 
@@ -25,9 +16,6 @@ function App() {
 
   const [isAuthorized, setAuthorized] = useState(false);
   const [isCurrentUser, setCurrentUser] = useState({});
-  const [savedMovies, setSavedMovies] = useState([]);
-  const [isError, setIsError] = useState(false);
-  const [isEnablePreloader, setEnablePreloader] = useState(false);
 
   const navigation = useNavigate();
   const token = localStorage.getItem('jwt');
@@ -99,42 +87,6 @@ function App() {
     navigation('/');
   }
 
-
-  function handleUpdateUser(userInfo) {
-    requestMainApi.updateUserInfo(userInfo, token)
-      .then((profileInfo) => {
-        setCurrentUser(profileInfo);
-        setIsError(false);
-      })
-      .catch((err) => {
-        console.log(`ошибка при изменении профиля: ${err}`)
-        if (err === 'произошла ошибка: 409') {
-          setIsError(true);
-        }
-      });
-
-  }
-
-
-  function handleSaveMovie(film) {
-    requestMainApi.saveMovie(film, token)
-      .then((filmCard) => {
-        setSavedMovies([filmCard, ...savedMovies]);
-      })
-      .catch((err) => console.log(`ошибка при сохранении фильма: ${err}`));
-  }
-
-
-  function handleRemoveMovie(film) {
-    requestMainApi.removeMovie(film._id, token)
-      .then(() => {
-        const filmsList = savedMovies.filter((item) => item._id === film._id ? false : true);
-        setSavedMovies(filmsList);
-      })
-      .catch((err) => console.log(`ошибка при удалении фильма: ${err}`));
-  }
-
-
   return (
     <CurrentUserContext.Provider value={isCurrentUser}>
       <div className='page'>
@@ -145,12 +97,8 @@ function App() {
               path='/'
               element={
                 <>
-                  <Header loggedIn={isAuthorized} color={'blue'} />
-                  <Promo />
-                  <AboutProject />
-                  <Techs />
-                  <AboutMe />
-                  <Portfolio />
+                  <Header loggedIn={isAuthorized} />
+                  <Map />
                   <Footer />
                 </>
               }
@@ -158,46 +106,11 @@ function App() {
 
 
             <Route
-              path='/movies'
+              path='/world'
               element={
                 <ProtectedRoute loggedIn={isAuthorized}>
-                  <Preloader isEnable={isEnablePreloader}></Preloader>
-                  <Header loggedIn={isAuthorized} color={'black'} />
-                  <Movies
-                    likeMovie={handleSaveMovie}
-                    removeMovie={handleRemoveMovie}
-                    statusPreloader={setEnablePreloader}
-                    savedMoviesList={savedMovies} />
+                  <Header loggedIn={isAuthorized} />
                   <Footer />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path='/saved-movies'
-              element={
-                <ProtectedRoute loggedIn={isAuthorized}>
-                  <Header loggedIn={true} color={'black'} />
-                  <SavedMovies
-                    removeMovie={handleRemoveMovie}
-                    statusPreloader={setEnablePreloader}
-                    cardList={savedMovies} />
-                  <Footer />
-                </ProtectedRoute>
-              }
-            />
-
-
-            <Route
-              path='/profile'
-              element={
-                <ProtectedRoute loggedIn={isAuthorized}>
-                  <Header loggedIn={true} color={'black'} />
-                  <Profile
-                    onSubmitProfile={handleUpdateUser}
-                    onLogout={handleSignOut}
-                    userInfo={isCurrentUser}
-                    errorEmail={isError} />
                 </ProtectedRoute>
               }
             />
